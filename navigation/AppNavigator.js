@@ -65,7 +65,12 @@ import ProductListingScreen from '../screens/ProductListingScreen';
 import ProductDetailScreen from '../screens/ProductDetailScreen';
 import WishlistScreen from '../screens/WishlistScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-
+import CartScreen from '../screens/cartScreen';
+import SaleScreen from '../screens/saleScreen';
+import CheckoutScreen from '../screens/checkoutScreen';
+import PaymentScreen from '../screens/paymentScreen';
+import OrderConfirmationScreen from '../screens/orderConfirmationScreen';
+import YourOrdersScreen from '../screens/yourOrdersScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -102,6 +107,12 @@ const AppNavigator = () => (
       <Stack.Screen name="Main" component={TabNavigator} options={{ headerShown: false }} />
       <Stack.Screen name="ProductListing" component={ProductListingScreen} options={{ headerShown: false }} />
       <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} options={{ title: 'Product Detail' }} />
+      <Stack.Screen name="CartScreen" component={CartScreen} options={{ title: 'My Cart' }} /> 
+      <Stack.Screen name="SaleScreen" component={SaleScreen} />
+      <Stack.Screen name="CheckoutScreen" component={CheckoutScreen} options={{ title: 'Checkout' }} />
+      <Stack.Screen name="PaymentScreen" component={PaymentScreen} options={{ title: 'Payment' }} />
+      <Stack.Screen name="OrderConfirmation" component={OrderConfirmationScreen} options={{ title: 'Order Confirmation' }} />
+      <Stack.Screen name="YourOrdersScreen" component={YourOrdersScreen} options={{ title: 'My Orders' }} />
     </Stack.Navigator>
   </NavigationContainer>
 );

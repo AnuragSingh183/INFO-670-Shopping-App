@@ -1,16 +1,37 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, LinearGradient } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Alert
+} from 'react-native';
 import { LinearGradient as Gradient } from 'expo-linear-gradient';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase/firebaseConfig'; // Adjust path as needed
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const handleLogin = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigation.navigate('Main'); // or your home/dashboard screen
+    } catch (error) {
+      Alert.alert('Login Error', error.message);
+    }
+  };
+
   return (
     <Gradient colors={['#E6F0FA', '#FFFFFF']} style={styles.background}>
       <View style={styles.container}>
         <Image
-          source={{ uri: 'https://www.pngall.com/wp-content/uploads/5/Technology-Logo-PNG-Image.png' }}
+          source={{
+            uri: 'https://www.pngall.com/wp-content/uploads/5/Technology-Logo-PNG-Image.png',
+          }}
           style={styles.logo}
         />
         <Text style={styles.title}>TechShop</Text>
@@ -29,10 +50,7 @@ const LoginScreen = ({ navigation }) => {
           onChangeText={setPassword}
           secureTextEntry
         />
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('Main')}
-        >
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
@@ -45,13 +63,24 @@ const LoginScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  container: { 
-    flex: 1, 
-    justifyContent: 'center', 
+  container: {
+    flex: 1,
+    justifyContent: 'center',
     padding: 20,
   },
-  logo: { width: 100, height: 100, alignSelf: 'center', marginBottom: 20 },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#1E3A8A', textAlign: 'center', marginBottom: 20 },
+  logo: {
+    width: 100,
+    height: 100,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1E3A8A',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
