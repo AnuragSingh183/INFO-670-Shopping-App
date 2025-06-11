@@ -1,50 +1,95 @@
-# Welcome to your Expo app 👋
+ Design and Purpose
+ Our shopping app is designed for tech-savvy users who frequently shop for electronics like phones, laptops, and accessories. The app provides an intuitive interface, categorized product browsing, wishlist management, product search mechanism and seamless navigation. It’s targeted at mobile-first users seeking a clean, efficient shopping experience with quick access to product deals.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+ Screenshots
+ Home Screen-
 
-## Get started
 
-1. Install dependencies
+ ![alt text](image.png)
 
-   ```bash
-   npm install
-   ```
+ Product Screen-
 
-2. Start the app
+ ![alt text](image-1.png)
 
-   ```bash
-   npx expo start
-   ```
+ Wishlist Screen-
 
-In the output, you'll find options to open the app in a
+![alt text](image-2.png)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Profile Screen-
 
-## Get a fresh project
 
-When you're ready, run:
+![alt text](image-3.png)
 
-```bash
-npm run reset-project
-```
+My cart Screen-
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+![alt text](image-4.png)
 
-## Learn more
 
-To learn more about developing your project with Expo, look at the following resources:
+Home Screen: Displays categories, banners, and deal-of-the-day highlights.
+Product Detail Screen: Shows product info, rating, price, and wishlist toggle.
+Wishlist Screen: Displays user-saved items; includes "Shop Now" action if empty.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
-## Join the community
+Server API Design and Specification
 
-Join our community of developers creating universal apps.
+Firebase Firestore & Authentication were used for backend services.
+Endpoints and Operations
+/products
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Method: GET
+
+Purpose: Fetch a list of all available products
+
+Parameters: None
+
+Implementation: Queried using Firebase getDocs(collection(db, 'products'))
+
+/wishlists/:uid
+
+Method: GET
+
+Purpose: Retrieve the wishlist items for a specific user
+
+Parameters: Firebase Auth UID
+
+Implementation: Read the document wishlists/{uid} from Firestore.
+
+/wishlists/:uid
+
+Method: PUT
+
+Purpose: Add or remove a product from the user's wishlist
+
+Data: JSON object with the product structure like { id, name, price, image, ... }
+
+Implementation: Update the items field inside the wishlists/{uid} Firestore document.
+
+
+Example API Flow:
+
+On app load, the app uses Firebase Auth to retrieve the user's ID.
+Cart:
+
+When a user adds an item to the cart, the product is stored in cart/{uid} as part of a document with a items array.
+
+The quantity can be updated, and the entire cart can be fetched via getDoc(doc(db, 'cart', uid)).
+
+Orders:
+
+Upon checkout, the cart data is used to create a document in orders/{uid}/user_orders/{orderId}.
+
+Each order contains cart items, order total, timestamp, and optionally shipping info
+
+
+Experiences
+
+This project was an end-to-end mobile app built with React Native (Expo), Firebase Authentication, and Firestore. 
+
+Key experiences included:
+Firebase Integration: We replaced local state with real-time Firestore sync for wishlist storage.
+UI Design: Crafted a modern UI with categorized cards, horizontal lists, and responsive layout.
+Wishlist Toggle Logic: Built a context-based solution for managing global wishlist state.
+Challenges: Syncing state after login, handling async Firestore operations, and styling scrollable lists.
+Best Practices: Code modularity, context providers, reusable components (ProductCard, CategoryCard), and loader handling using ShimmerPlaceholder.
+Future Plans: Add Stripe checkout, user reviews, and category-based filtering with Firebase queries.

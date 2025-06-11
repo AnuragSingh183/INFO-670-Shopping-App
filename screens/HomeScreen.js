@@ -26,7 +26,7 @@ const categories = [
   { name: 'Laptops', image: 'https://images.pexels.com/photos/1229861/pexels-photo-1229861.jpeg' },
   { name: 'Speakers', image: 'https://images.pexels.com/photos/374087/pexels-photo-374087.jpeg' },
   { name: 'Earphones', image: 'https://images.pexels.com/photos/205926/pexels-photo-205926.jpeg' },
-  { name: 'TV', image: 'https://images.pexels.com/photos/159853/tv-television-lcd-technology-159853.jpeg' }
+//  { name: 'TV', image: 'https://images.pexels.com/photos/159853/tv-television-lcd-technology-159853.jpeg' }
 ];
 
 const banners = [
@@ -39,6 +39,8 @@ const HomeScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -46,6 +48,7 @@ const HomeScreen = ({ navigation }) => {
         const snapshot = await getDocs(collection(db, 'products'));
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setProducts(data);
+        setFilteredProducts(data);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching products:', err);
@@ -62,10 +65,47 @@ const HomeScreen = ({ navigation }) => {
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    }
+  }, [searchQuery, products]);
+
   const deals = [...products].sort((a, b) => b.discount - a.discount).slice(0, 5);
   const topPicks = [...products].sort((a, b) => b.rating - a.rating).slice(0, 5);
   const trendingNow = products.filter(p => p.price >= 100 && p.price <= 300).slice(0, 5);
   const recentlyViewed = [...products].slice(-5).reverse();
+
+  const renderHorizontalList = (data) => (
+    <FlatList
+      data={data}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      renderItem={({ item }) => (
+        <ProductCard
+          product={item}
+          onPress={() => navigation.navigate('ProductDetailScreen', { product: item })}
+        />
+      )}
+      keyExtractor={(item) => item.id}
+    />
+  );
+
+  const shimmerCards = () => (
+    <View style={{ flexDirection: 'row', paddingHorizontal: 10 }}>
+      {[...Array(3)].map((_, index) => (
+        <ShimmerPlaceHolder
+          key={index}
+          style={{ width: 140, height: 180, borderRadius: 12, marginRight: 10 }}
+        />
+      ))}
+    </View>
+  );
 
   return (
     <ScreenWrapper>
@@ -79,135 +119,99 @@ const HomeScreen = ({ navigation }) => {
 
         <View style={styles.searchContainer}>
           <Ionicons name="search-outline" size={20} color="#6B7280" style={styles.searchIcon} />
-          <TextInput style={styles.searchInput} placeholder="Search for products..." />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search for products..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
         </View>
 
-        <FlatList
-          data={banners}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => {
-                if (item.text === 'Summer Sale Up to 50% Off!') {
-                  navigation.navigate('SaleScreen');
-                }
-              }}
-            >
-              <View style={styles.bannerContainer}>
-                <Image source={{ uri: item.image }} style={styles.banner} />
-                <View style={styles.bannerOverlay}>
-                  <Text style={styles.bannerText}>{item.text}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          )}
-          keyExtractor={(item) => item.id}
-          style={styles.bannerContainer}
-        />
+        {searchQuery.trim() === '' ? (
+          <>
+            <FlatList
+              data={banners}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    if (item.text === 'Summer Sale Up to 50% Off!') {
+                      navigation.navigate('SaleScreen');
+                    }
+                  }}
+                >
+                  <View style={styles.bannerContainer}>
+                    <Image source={{ uri: item.image }} style={styles.banner} />
+                    <View style={styles.bannerOverlay}>
+                      <Text style={styles.bannerText}>{item.text}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.id}
+              style={styles.bannerContainer}
+            />
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Shop by Category</Text>
-          <FlatList
-            data={categories}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <CategoryCard
-                category={item.name}
-                image={item.image}
-                onPress={() => navigation.navigate('ProductListing', { category: item.name })}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Shop by Category</Text>
+              <FlatList
+                data={categories}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                renderItem={({ item }) => (
+                  <CategoryCard
+                    category={item.name}
+                    image={item.image}
+                    onPress={() => navigation.navigate('ProductListing', { category: item.name })}
+                  />
+                )}
+                keyExtractor={(item) => item.name}
+              />
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Deals of the Day</Text>
+              {loading ? shimmerCards() : renderHorizontalList(deals)}
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Top Picks for You</Text>
+              {loading ? shimmerCards() : renderHorizontalList(topPicks)}
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Trending Now</Text>
+              {loading ? shimmerCards() : renderHorizontalList(trendingNow)}
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Recently Viewed</Text>
+              {renderHorizontalList(recentlyViewed)}
+            </View>
+          </>
+        ) : (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Search Results</Text>
+            {filteredProducts.length === 0 ? (
+              <Text style={{ paddingHorizontal: 10 }}>No matching products found.</Text>
+            ) : (
+              <FlatList
+                data={filteredProducts}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                renderItem={({ item }) => (
+                  <ProductCard
+                    product={item}
+                    onPress={() => navigation.navigate('ProductDetailScreen', { product: item })}
+                  />
+                )}
+                keyExtractor={(item) => item.id}
               />
             )}
-            keyExtractor={(item) => item.name}
-          />
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Deals of the Day</Text>
-          {loading ? (
-            <View style={{ flexDirection: 'row', paddingHorizontal: 10 }}>
-              {[...Array(3)].map((_, index) => (
-                <ShimmerPlaceHolder
-                  key={index}
-                  style={{ width: 140, height: 180, borderRadius: 12, marginRight: 10 }}
-                />
-              ))}
-            </View>
-          ) : (
-            <FlatList
-              data={deals}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <ProductCard product={item} onPress={() => navigation.navigate('ProductDetailScreen', { product: item })} />
-              )}
-              keyExtractor={(item) => item.id}
-            />
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Top Picks for You</Text>
-          {loading ? (
-            <View style={{ flexDirection: 'row', paddingHorizontal: 10 }}>
-              {[...Array(3)].map((_, index) => (
-                <ShimmerPlaceHolder
-                  key={index}
-                  style={{ width: 140, height: 180, borderRadius: 12, marginRight: 10 }}
-                />
-              ))}
-            </View>
-          ) : (
-            <FlatList
-              data={topPicks}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <ProductCard product={item} onPress={() => navigation.navigate('ProductDetailScreen', { product: item })} />
-              )}
-              keyExtractor={(item) => item.id}
-            />
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Trending Now</Text>
-          {loading ? (
-            <View style={{ flexDirection: 'row', paddingHorizontal: 10 }}>
-              {[...Array(3)].map((_, index) => (
-                <ShimmerPlaceHolder
-                  key={index}
-                  style={{ width: 140, height: 180, borderRadius: 12, marginRight: 10 }}
-                />
-              ))}
-            </View>
-          ) : (
-            <FlatList
-              data={trendingNow}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <ProductCard product={item} onPress={() => navigation.navigate('ProductDetailScreen', { product: item })} />
-              )}
-              keyExtractor={(item) => item.id}
-            />
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recently Viewed</Text>
-          <FlatList
-            data={recentlyViewed}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <ProductCard product={item} onPress={() => navigation.navigate('ProductDetailScreen', { product: item })} />
-            )}
-            keyExtractor={(item) => item.id}
-          />
-        </View>
+          </View>
+        )}
       </ScrollView>
     </ScreenWrapper>
   );

@@ -41,11 +41,11 @@ const removeItem = async (productId) => {
     await deleteDoc(doc(db, 'cart', docId));
     console.log('Item removed with ID:', docId);
 
-    // Optimistically update the UI
+  
     setCartItems(prevItems => {
       const updatedItems = prevItems.filter(item => item.productId !== productId);
 
-      // Recalculate the total based on updated items
+      
       const newTotal = updatedItems.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
       setTotal(newTotal);
 

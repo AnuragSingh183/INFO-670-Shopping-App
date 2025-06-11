@@ -6,6 +6,8 @@ import { getAuth } from 'firebase/auth';
 import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import ScreenWrapper from './ScreenWrapper';
+import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
+
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -15,6 +17,7 @@ const YourOrdersScreen = () => {
   const [orders, setOrders] = useState([]);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const user = getAuth().currentUser;
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -23,6 +26,7 @@ const YourOrdersScreen = () => {
         const snapshot = await getDocs(ordersQuery);
         const userOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setOrders(userOrders);
+        setLoading(false);
       }
     };
     fetchOrders();
@@ -61,7 +65,7 @@ const YourOrdersScreen = () => {
         <Text style={styles.detailText}>Total: <Text style={styles.price}>${item.total?.toFixed(2)}</Text></Text>
         <Text style={styles.detailText}>Date: {item.timestamp?.toDate().toLocaleDateString()}</Text>
         <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-          <Text style={styles.statusText}>{item.status || 'Pending'}</Text>
+          <Text style={styles.statusText}>{item.status || 'Order Placed'}</Text>
         </View>
 
         {expandedOrderId === item.id && (
@@ -72,6 +76,8 @@ const YourOrdersScreen = () => {
                 <Text style={styles.itemName}>{product.name}</Text>
                 
                 <Text style={styles.itemPrice}>${product.price}</Text>
+     
+                
               </View>
             ))}
             <TouchableOpacity
@@ -88,19 +94,55 @@ const YourOrdersScreen = () => {
 
   return (
     <ScreenWrapper>
-      <FlatList
-        data={orders}
-        renderItem={renderOrderItem}
-        keyExtractor={item => item.id}
-        ListEmptyComponent={<Text style={styles.emptyText}>You haven't placed any orders yet.</Text>}
-        contentContainerStyle={styles.container}
-      />
+    {loading ? (
+  <View style={styles.container}>
+    {[...Array(3)].map((_, idx) => (
+      <View key={idx} style={styles.shimmerCard}>
+        <ShimmerPlaceHolder style={styles.shimmerLine} />
+        <ShimmerPlaceHolder style={styles.shimmerLine} />
+        <ShimmerPlaceHolder style={[styles.shimmerLine, { width: '60%' }]} />
+        <ShimmerPlaceHolder style={[styles.shimmerBadge, { width: 80 }]} />
+      </View>
+    ))}
+  </View>
+) : (
+  <FlatList
+    data={orders}
+    renderItem={renderOrderItem}
+    keyExtractor={item => item.id}
+    ListEmptyComponent={<Text style={styles.emptyText}>You haven't placed any orders yet.</Text>}
+    contentContainerStyle={styles.container}
+  />
+)}
+
     </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flexGrow: 1, padding: 15, backgroundColor: '#F3F4F6' },
+  shimmerCard: {
+  backgroundColor: '#FFFFFF',
+  padding: 16,
+  borderRadius: 12,
+  marginBottom: 15,
+  elevation: 3,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.07,
+  shadowRadius: 3,
+},
+shimmerLine: {
+  height: 14,
+  borderRadius: 8,
+  marginBottom: 10,
+},
+shimmerBadge: {
+  height: 20,
+  borderRadius: 6,
+  marginTop: 6,
+},
+
   orderCard: {
     backgroundColor: '#FFFFFF',
     padding: 16,

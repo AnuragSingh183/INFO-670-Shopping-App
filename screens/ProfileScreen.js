@@ -5,6 +5,8 @@ import { useNavigation } from '@react-navigation/native';
 import { getAuth } from 'firebase/auth';
 import { db } from '../firebase/firebaseConfig';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { useFocusEffect } from '@react-navigation/native';
+
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
@@ -13,7 +15,8 @@ const ProfileScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState('Loading...');
   const [orders, setOrders] = useState([]);
 
-  useEffect(() => {
+ useFocusEffect(
+  React.useCallback(() => {
     const fetchUserData = async () => {
       if (user) {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -29,8 +32,13 @@ const ProfileScreen = () => {
         setOrders(userOrders);
       }
     };
+
     fetchUserData();
-  }, [user]);
+
+    // Optional: cleanup function
+    return () => {};
+  }, [user])
+);
 
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'Guest';
   const photoURL = user?.photoURL;

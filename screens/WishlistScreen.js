@@ -4,7 +4,8 @@ import ProductCard from '../components/ProductCard';
 import { useWishlist } from '../context/WishlistContext';
 
 const WishlistScreen = ({ navigation }) => {
-  const { wishlist } = useWishlist();
+  const { wishlist, loading } = useWishlist();
+
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
