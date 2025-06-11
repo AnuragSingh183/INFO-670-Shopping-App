@@ -1,3 +1,7 @@
+Team Members-
+Komal S Popli
+Anurag Singh
+ 
  Design and Purpose
  Our shopping app is designed for tech-savvy users who frequently shop for electronics like phones, laptops, and accessories. The app provides an intuitive interface, categorized product browsing, wishlist management, product search mechanism and seamless navigation. It’s targeted at mobile-first users seeking a clean, efficient shopping experience with quick access to product deals.
 
