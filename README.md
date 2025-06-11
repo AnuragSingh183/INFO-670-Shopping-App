@@ -55,6 +55,13 @@ Parameters: Firebase Auth UID
 
 Implementation: Read the document wishlists/{uid} from Firestore.
 
+
+/cart/:uid
+Method: PUT
+Purpose: Add/Update/Remove item in cart
+Data: JSON with { productId, quantity, ... }
+Implementation: Update the items array in cart/{uid}
+
 /wishlists/:uid
 
 Method: PUT
